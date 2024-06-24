@@ -1,0 +1,8 @@
+tqdm
+torch
+numpy
+pandas
+seaborn
+requests
+matplotlib
+scikit-learn
