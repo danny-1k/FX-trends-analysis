@@ -78,4 +78,4 @@ class MLPTrendEmbeddingDataset(TrendDataset):
         embedding, _ = self.model(image)
         embedding = embedding.squeeze()
         
-        return embedding
+        return embedding, image.view(1, 64, 128)

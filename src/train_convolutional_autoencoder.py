@@ -76,6 +76,7 @@ class CovarianceReg(nn.Module):
         
         return covariance_matrix.mean()
 
+
 class MSEBCELoss(nn.Module):
     def __init__(self):
         super().__init__()
@@ -88,7 +89,8 @@ class MSEBCELoss(nn.Module):
 
 EPOCHS = 100
 lossfn = MSEBCELoss()#nn.MSELoss()
-reg = VarianceReg()
+var_reg = VarianceReg()
+covariance_reg = CovarianceReg()
 
 writer = SummaryWriter()
 
@@ -107,7 +109,7 @@ for epoch in range(EPOCHS):
 
         z, p = model(x)
         # p = model(x)
-        loss = lossfn(p, x) #+ reg(z)
+        loss = lossfn(p, x)
         
         loss.backward()
         optimiser.step()
@@ -142,4 +144,4 @@ for epoch in range(EPOCHS):
             "test_loss": test_loss.value,
             "state_dict": model.state_dict(),
             "model": model, 
-        }, f"../checkpoints/conv_autoencoder/checkpoint.pth")
+        }, f"../checkpoints/conv_autoencoder_reg/checkpoint.pth")

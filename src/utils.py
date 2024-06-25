@@ -71,3 +71,13 @@ def create_image_from_time_series(window, height=350, width=500):
         image[height - j - 1, i] = 1
 
     return image
+
+
+class Converter:
+    def __init__(self, height, width):
+        self.height = height
+        self.width = width
+    def __call__(self, chunk):
+        image = create_image_from_time_series(window=chunk, height=self.height, width=self.width)
+
+        return image
