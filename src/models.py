@@ -14,7 +14,7 @@ class Autoencoder(nn.Module):
 
     def forward(self, x):
         latent = self.encoder(x)
-        x = self.decoder(latent)
+        x = self.decoder(latent[0] if self.encoder.vae else latent)
 
         return latent, x
     
@@ -23,20 +23,41 @@ class MLPEncoder(nn.Module):
     """
     MLP Encoder Class
     """
-    def __init__(self, input_size, widths):
+    def __init__(self, input_size, widths, vae=False):
         super().__init__()
         self.widths = widths
+        self.vae = vae
         self.blocks = nn.Sequential(*[
             nn.Sequential(
-                nn.Linear(input_size if i == 0 else widths[i-1], width),
-                nn.ReLU()
+                nn.Linear(input_size if i == 0 else widths[i-1], width if (i < (len(self.widths) - 1) or not vae) else 2 * width),
+                nn.ReLU() if i < (len(self.widths) - 1) else nn.Identity()
             )
             for i, width in enumerate(self.widths)
         ])
 
+    
     def forward(self, x):
         x = self.blocks(x)
-        return x
+        if not self.vae:
+            return x
+        
+        # x of shape (N, 2 * E)
+        x = x.view(x.shape[0], -1, 2)
+
+        mu = x[:, :, 0]
+        logvar = x[:, :, 1]
+
+        z = self._reparameterize(mu, logvar)
+
+        return (z, mu, logvar)
+
+
+    def _reparameterize(self, mu, logvar):
+        std = torch.exp(0.5 * logvar)
+        eps = torch.rand_like(std)
+
+        return mu + eps * std
+    
 
 
 class MLPDecoder(nn.Module):
@@ -55,8 +76,12 @@ class MLPDecoder(nn.Module):
         ])
 
     def forward(self, x):
+        if type(x) != torch.Tensor:
+            x = x[0]
+
         x = self.blocks(x)
         return x
+    
 
 
 class ConvolutionalEncoder(nn.Module):
