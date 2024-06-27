@@ -14,7 +14,8 @@ class TrendImageDataset(Dataset):
     Loads Images and converts them to Torch Tensors.
     """
     
-    def __init__(self, root):
+    def __init__(self, root, flatten=False):
+        self.flatten = flatten
         self.images = [os.path.join(root, f) for f in os.listdir(root)]
     
     def __len__(self):
@@ -24,8 +25,12 @@ class TrendImageDataset(Dataset):
         f = self.images[idx]
         x = np.asarray(Image.open(f))
         x = x / 255
-        x = torch.from_numpy(x)
-        x = x.unsqueeze(0).float()
+        x = torch.from_numpy(x).float()
+
+        if self.flatten:
+            return x.view(-1)
+        
+        x = x.unsqueeze(0)
 
         return x
 
