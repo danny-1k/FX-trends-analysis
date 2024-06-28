@@ -21,6 +21,9 @@ class Trainer:
         self.model = model
         self.model.to(device)
 
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
         self.optimiser = optimiser
         self.train = train
         self.test = test
