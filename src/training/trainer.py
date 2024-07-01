@@ -127,6 +127,8 @@ class ContrastiveTrainer(Trainer):
             x1 = x1.to(self.device)
             x2 = x2.to(self.device)
 
+            print(x1.shape)
+
             z1, p1 = self.model(x1)
             z2, p2 = self.model(x2)
 
@@ -161,7 +163,7 @@ class ContrastiveTrainer(Trainer):
             self.test_loss.update(loss.item())
 
         self.writer.add_scalar(tag="Test/Loss", scalar_value=self.test_loss.value, global_step=epoch)
-        self.writer.add_image(tag="Train/Predictions1", img_tensor=make_grid(p1.view(p1.shape[0], 1, 64, 128)), global_step=epoch)
-        self.writer.add_image(tag="Train/Predictions2", img_tensor=make_grid(p1.view(p2.shape[0], 1, 64, 128)), global_step=epoch)
-        self.writer.add_image(tag="Train/GroundTruth1", img_tensor=make_grid(x1.view(x1.shape[0], 1, 64, 128)), global_step=epoch)
-        self.writer.add_image(tag="Train/GroundTruth2", img_tensor=make_grid(x2.view(x2.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Test/Predictions1", img_tensor=make_grid(p1.view(p1.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Test/Predictions2", img_tensor=make_grid(p1.view(p2.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Test/GroundTruth1", img_tensor=make_grid(x1.view(x1.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Test/GroundTruth2", img_tensor=make_grid(x2.view(x2.shape[0], 1, 64, 128)), global_step=epoch)
