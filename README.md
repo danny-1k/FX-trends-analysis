@@ -1,5 +1,8 @@
 This is an attempt to building a hybrid ML trading strategy.
 
+Hybrid in the sense that we make use of rule-based, explainable algorithms and machine learning techniques.
+
+
 ## Hypothesis & Background:
 It can be helpful to see the financial markets as a large interconnected system.
 Changes in one asset may affect certain other assets in the market.
