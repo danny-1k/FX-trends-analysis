@@ -30,5 +30,7 @@ Once we can abstract these short-term trends and represent them as a snapshot of
 
 
 ## Next steps
+
+Explore other algorithms we could add and eventually develop a "Mixture of experts" of sorts
 Backtest, record metrics and start development of trading system.
 Once trading system is developed, deploy live and sit back.
