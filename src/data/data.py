@@ -1,11 +1,9 @@
 import os
 import torch
 from torch.utils.data import Dataset
+from torchvision.transforms import transforms
 from PIL import Image
 import numpy as np
-
-from models import Autoencoder, MLPEncoder, MLPDecoder
-
 
 
 
@@ -35,6 +33,50 @@ class TrendImageDataset(Dataset):
         return x
     
 
+class TrendImageDatasetContrastive(Dataset):
+    def __init__(self, root, flatten=False):
+        self.flatten = flatten
+        self.images = [os.path.join(root, f) for f in os.listdir(root) if ".png" in f]
+
+        self.transform = transforms.RandomChoice([
+                transforms.RandomRotation(degrees=(-10, 10)),
+                transforms.RandomErasing(p=1),
+                transforms.RandomAffine(degrees=(-10, 10), translate=(0.2, 0.2)),
+            ])
+    
+    def __len__(self):
+        return len(self.images)
+    
+    def __getitem__(self, idx):
+        # half the time, choose a random image from the dataset, 
+        # other half, augment the current image.
+
+
+        f = self.images[idx]
+        x1 = self._get_img(idx)
+
+        if np.random.random() > .5:
+            x2 = self.transform(x1)
+            y = 1  # y = 1 means they are the same
+
+        else:
+            x2 = self._get_img(np.random.randint(len(self)))
+            y = 0 # y = 0 means they are not the same
+
+        
+        return x1, x2, y
+
+
+    def _get_img(self, idx):
+        f = self.images[idx]
+        x1 = np.asarray(Image.open(f)) / 255
+        x1 = torch.from_numpy(x1).float()
+
+        x1 = x1.unsqueeze(0)
+
+        return x1
+
+    
 class TrendArrayDataset(Dataset):
     def __init__(self, root, flatten=False):
         self.flatten = flatten
@@ -79,33 +121,6 @@ class TrendDataset(Dataset):
 
         return image
     
-
-class MLPTrendEmbeddingDataset(TrendDataset):
-    def __init__(self, df, converter, window=5):
-        super().__init__(df=df, converter=converter, window=window)
-
-        self.model = Autoencoder(
-            encoder=MLPEncoder(128*64, [2048, 512, 128]),
-            decoder=MLPDecoder(128*64, widths=[128, 512, 2048])
-        )
-
-        checkpoint = torch.load("../checkpoints/conv_autoencoder/checkpoint.pth")
-        state_dict = checkpoint["state_dict"]
-
-        self.model.load_state_dict(state_dict)
-        self.model.requires_grad_(False)
-
-
-    @torch.no_grad()
-    def __getitem__(self, idx):
-        image = super().__getitem__(idx)
-        image = torch.from_numpy(image)
-        image = image.view(1, -1).float()
-        embedding, _ = self.model(image)
-        embedding = embedding.squeeze()
-        
-        return embedding, image.view(1, 64, 128)
-
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
