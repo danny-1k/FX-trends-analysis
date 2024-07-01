@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-
+import torch.nn.functional as F
 
 
 class BCE(nn.Module):
@@ -16,7 +16,6 @@ class BCE(nn.Module):
         return loss
 
 
-
 class KLReg(nn.Module):
     def __init__(self):
         super().__init__()
@@ -27,9 +26,13 @@ class KLReg(nn.Module):
         return KLD
     
 
-class SimCLR(nn.Module):
-    def __init__(self):
+class BinaryContrastiveLoss(nn.Module):
+    def __init__(self, margin=.5):
         super().__init__()
+        self.margin = margin
 
-    def forward(self, z1, z2, labels):
-        pass
+    def forward(self, z1, z2, label):
+        distance = 1 - F.cosine_similarity(z1, z2, dim=1)
+        loss = label * distance.pow(2) + (1-label) * torch.clamp(self.margin - distance, min=0).pow(2)
+
+        return loss
