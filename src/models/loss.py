@@ -34,5 +34,6 @@ class BinaryContrastiveLoss(nn.Module):
     def forward(self, z1, z2, label):
         distance = 1 - F.cosine_similarity(z1, z2, dim=1)
         loss = label * distance.pow(2) + (1-label) * torch.clamp(self.margin - distance, min=0).pow(2)
+        loss = loss.mean()
 
         return loss
