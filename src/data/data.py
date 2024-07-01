@@ -63,6 +63,10 @@ class TrendImageDatasetContrastive(Dataset):
             x2 = self._get_img(np.random.randint(len(self)))
             y = 0 # y = 0 means they are not the same
 
+        if self.flatten:
+            x1 = x1.view(-1)
+            x2 = x2.view(-1)
+
         
         return x1, x2, y
 
