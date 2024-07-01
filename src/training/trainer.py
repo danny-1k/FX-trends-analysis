@@ -114,3 +114,54 @@ class Trainer:
         torch.save(checkpoint, os.path.join(self.save_dir, "checkpoint.pt"))
 
         
+class ContrastiveTrainer(Trainer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def _run_train_once(self, epoch):
+        self.model.train()
+
+        for x1, x2 in tqdm(self.train):
+            self.optimiser.zero_grad()
+
+            x1 = x1.to(self.device)
+            x2 = x2.to(self.device)
+
+            z1, p1 = self.model(x1)
+            z2, p2 = self.model(x2)
+
+            loss = self.lossfn(z1, z2, p1, p2, x1, x2)
+
+            loss.backward()
+            self.optimiser.step()
+
+            self.train_loss.update(loss.item())
+
+        self.writer.add_scalar(tag="Train/Loss", scalar_value=self.train_loss.value, global_step=epoch)
+        self.writer.add_image(tag="Train/Predictions1", img_tensor=make_grid(p1.view(p1.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Train/Predictions2", img_tensor=make_grid(p1.view(p2.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Train/GroundTruth1", img_tensor=make_grid(x1.view(x1.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Train/GroundTruth2", img_tensor=make_grid(x2.view(x2.shape[0], 1, 64, 128)), global_step=epoch)
+    
+    @torch.no_grad()
+    def _run_test_once(self, epoch):
+        self.model.eval()
+
+        for x1, x2 in tqdm(self.test):
+            self.optimiser.zero_grad()
+
+            x1 = x1.to(self.device)
+            x2 = x2.to(self.device)
+
+            z1, p1 = self.model(x1)
+            z2, p2 = self.model(x2)
+
+            loss = self.lossfn(z1, z2, p1, p2, x1, x2)
+
+            self.test_loss.update(loss.item())
+
+        self.writer.add_scalar(tag="Test/Loss", scalar_value=self.test_loss.value, global_step=epoch)
+        self.writer.add_image(tag="Train/Predictions1", img_tensor=make_grid(p1.view(p1.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Train/Predictions2", img_tensor=make_grid(p1.view(p2.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Train/GroundTruth1", img_tensor=make_grid(x1.view(x1.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Train/GroundTruth2", img_tensor=make_grid(x2.view(x2.shape[0], 1, 64, 128)), global_step=epoch)
