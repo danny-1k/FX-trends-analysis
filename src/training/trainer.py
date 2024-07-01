@@ -121,7 +121,7 @@ class ContrastiveTrainer(Trainer):
     def _run_train_once(self, epoch):
         self.model.train()
 
-        for x1, x2 in tqdm(self.train):
+        for x1, x2, label in tqdm(self.train):
             self.optimiser.zero_grad()
 
             x1 = x1.to(self.device)
@@ -130,7 +130,7 @@ class ContrastiveTrainer(Trainer):
             z1, p1 = self.model(x1)
             z2, p2 = self.model(x2)
 
-            loss = self.lossfn(z1, z2, p1, p2, x1, x2)
+            loss = self.lossfn(z1, z2, p1, p2, x1, x2, label)
 
             loss.backward()
             self.optimiser.step()
@@ -147,7 +147,7 @@ class ContrastiveTrainer(Trainer):
     def _run_test_once(self, epoch):
         self.model.eval()
 
-        for x1, x2 in tqdm(self.test):
+        for x1, x2, label in tqdm(self.test):
             self.optimiser.zero_grad()
 
             x1 = x1.to(self.device)
@@ -156,7 +156,7 @@ class ContrastiveTrainer(Trainer):
             z1, p1 = self.model(x1)
             z2, p2 = self.model(x2)
 
-            loss = self.lossfn(z1, z2, p1, p2, x1, x2)
+            loss = self.lossfn(z1, z2, p1, p2, x1, x2, label)
 
             self.test_loss.update(loss.item())
 
