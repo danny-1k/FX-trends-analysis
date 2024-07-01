@@ -45,7 +45,7 @@ trainer = ContrastiveTrainer(
     train=train, 
     test=test, 
     writer=writer, 
-    save_dir="../checkpoints/mlp_autoencoder"
+    save_dir="../checkpoints/mlp_autoencoder_contrastive"
 )
 
 trainer.run(epochs=100)
