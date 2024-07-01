@@ -16,7 +16,7 @@ class TrendImageDataset(Dataset):
     
     def __init__(self, root, flatten=False):
         self.flatten = flatten
-        self.images = [os.path.join(root, f) for f in os.listdir(root)]
+        self.images = [os.path.join(root, f) for f in os.listdir(root) if ".png" in f]
     
     def __len__(self):
         return len(self.images)
@@ -30,6 +30,27 @@ class TrendImageDataset(Dataset):
         if self.flatten:
             return x.view(-1)
         
+        x = x.unsqueeze(0)
+
+        return x
+    
+
+class TrendArrayDataset(Dataset):
+    def __init__(self, root, flatten=False):
+        self.flatten = flatten
+        self.images = [os.path.join(root, f) for f in os.listdir(root) if ".npy" in f]
+
+    def __len__(self):
+        return len(self.images)
+    
+    def __getitem__(self, idx):
+        f = self.images[idx]
+        x = np.load(f)
+        x = torch.from_numpy(x).float()
+
+        if self.flatten:
+            return x.view(-1)
+    
         x = x.unsqueeze(0)
 
         return x
@@ -84,3 +105,14 @@ class MLPTrendEmbeddingDataset(TrendDataset):
         embedding = embedding.squeeze()
         
         return embedding, image.view(1, 64, 128)
+
+
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+
+    d = TrendArrayDataset(root="../data/processed/images/staggered/train")
+
+    print(d[0][0])
+
+    plt.imshow(d[0][0])
+    plt.show()

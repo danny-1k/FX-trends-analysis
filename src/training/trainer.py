@@ -1,7 +1,7 @@
 import os
 import torch
 from tqdm import tqdm
-from utils import RunningAverager
+from utils.utils import RunningAverager
 from torchvision.utils import make_grid
 
 
