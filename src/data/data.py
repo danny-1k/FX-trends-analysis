@@ -41,7 +41,7 @@ class TrendImageDatasetContrastive(Dataset):
         self.transform = transforms.RandomChoice([
                 transforms.RandomRotation(degrees=(-10, 10)),
                 transforms.RandomErasing(p=1),
-                transforms.RandomAffine(degrees=(-10, 10), translate=(0.2, 0.2)),
+                transforms.RandomAffine(degrees=(-10, 10), translate=(0.3, 0.3)),
             ])
     
     def __len__(self):
