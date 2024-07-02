@@ -81,3 +81,49 @@ class VariationalAutoencoder(nn.Module):
         z = mu + eps * std
 
         return z
+    
+
+class ConvolutionalAutoencoder(nn.Module):
+    def __init__(self, widths):
+        super().__init__()
+        
+        self.widths = widths
+
+        encoder_blocks = []
+        decoder_blocks = []
+
+        for i in range(len(widths)-1):
+            encoder_blocks.append(nn.Sequential(
+                nn.Conv2d(in_channels=widths[i], out_channels=widths[i+1], kernel_size=3, stride=1, padding=1),
+                nn.ReLU(),
+
+                nn.Conv2d(in_channels=widths[i+1], out_channels=widths[i+1], kernel_size=3, stride=1, padding=1),
+                nn.ReLU(),
+
+                nn.MaxPool2d(kernel_size=2, stride=2)
+            ))
+
+        # For the decoder blocks, we use a Transpose convolution -> Same Conv layer
+
+        for i in range(len(widths)-1)[::-1]:
+
+            decoder_blocks.append(nn.Sequential(
+                nn.ConvTranspose2d(in_channels=widths[i+1], out_channels=widths[i+1], kernel_size=2, stride=2, padding=0, output_padding=0), # exactly double image
+                nn.ReLU(),
+
+                nn.Conv2d(in_channels=widths[i+1], out_channels=widths[i], kernel_size=3, stride=1, padding=1),
+                nn.ReLU() if i != 0 else nn.Sigmoid()
+                
+            ))
+
+
+        self.encoder = nn.Sequential(*encoder_blocks)
+        self.decoder = nn.Sequential(*decoder_blocks)
+    
+    def forward(self, x):
+        z = self.encoder(x)
+        x = self.decoder(z)
+
+        return z.view(z.shape[0], -1), x
+    
+    
