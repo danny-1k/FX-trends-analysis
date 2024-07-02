@@ -127,8 +127,6 @@ class ContrastiveTrainer(Trainer):
             x1 = x1.to(self.device)
             x2 = x2.to(self.device)
 
-            print(x1.shape)
-
             z1, p1 = self.model(x1)
             z2, p2 = self.model(x2)
 
