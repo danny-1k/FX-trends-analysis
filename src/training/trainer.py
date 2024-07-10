@@ -16,6 +16,7 @@ class Trainer:
             test, 
             writer, 
             save_dir, 
+            image_size=(64, 128),
             device="cuda" if torch.cuda.is_available() else "cpu"):
         
         self.model = model
@@ -29,6 +30,7 @@ class Trainer:
         self.test = test
         self.writer = writer
         self.save_dir = save_dir
+        self.image_size = image_size
         self.lossfn = lossfn
         self.device = device
 
@@ -73,8 +75,8 @@ class Trainer:
             self.train_loss.update(loss.item())
 
         self.writer.add_scalar(tag="Train/Loss", scalar_value=self.train_loss.value, global_step=epoch)
-        self.writer.add_image(tag="Train/Predictions", img_tensor=make_grid(p.view(p.shape[0], 1, 64, 128)), global_step=epoch)
-        self.writer.add_image(tag="Train/GroundTruth", img_tensor=make_grid(x.view(x.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Train/Predictions", img_tensor=make_grid(p.view(p.shape[0], 1, *self.image_size)), global_step=epoch)
+        self.writer.add_image(tag="Train/GroundTruth", img_tensor=make_grid(x.view(x.shape[0], 1, *self.image_size)), global_step=epoch)
 
 
     @torch.no_grad()
@@ -91,8 +93,8 @@ class Trainer:
             self.test_loss.update(loss.item())
 
         self.writer.add_scalar(tag="Test/Loss", scalar_value=self.test_loss.value, global_step=epoch)
-        self.writer.add_image(tag="Test/Predictions", img_tensor=make_grid(p.view(p.shape[0], 1, 64, 128)), global_step=epoch)
-        self.writer.add_image(tag="Test/GroundTruth", img_tensor=make_grid(x.view(x.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Test/Predictions", img_tensor=make_grid(p.view(p.shape[0], 1, *self.image_size)), global_step=epoch)
+        self.writer.add_image(tag="Test/GroundTruth", img_tensor=make_grid(x.view(x.shape[0], 1, *self.image_size)), global_step=epoch)
 
 
     def _log_training_stats(self, epoch):
@@ -138,10 +140,10 @@ class ContrastiveTrainer(Trainer):
             self.train_loss.update(loss.item())
 
         self.writer.add_scalar(tag="Train/Loss", scalar_value=self.train_loss.value, global_step=epoch)
-        self.writer.add_image(tag="Train/Predictions1", img_tensor=make_grid(p1.view(p1.shape[0], 1, 64, 128)), global_step=epoch)
-        self.writer.add_image(tag="Train/Predictions2", img_tensor=make_grid(p1.view(p2.shape[0], 1, 64, 128)), global_step=epoch)
-        self.writer.add_image(tag="Train/GroundTruth1", img_tensor=make_grid(x1.view(x1.shape[0], 1, 64, 128)), global_step=epoch)
-        self.writer.add_image(tag="Train/GroundTruth2", img_tensor=make_grid(x2.view(x2.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Train/Predictions1", img_tensor=make_grid(p1.view(p1.shape[0], 1, *self.image_size)), global_step=epoch)
+        self.writer.add_image(tag="Train/Predictions2", img_tensor=make_grid(p1.view(p2.shape[0], 1, *self.image_size)), global_step=epoch)
+        self.writer.add_image(tag="Train/GroundTruth1", img_tensor=make_grid(x1.view(x1.shape[0], 1, *self.image_size)), global_step=epoch)
+        self.writer.add_image(tag="Train/GroundTruth2", img_tensor=make_grid(x2.view(x2.shape[0], 1, *self.image_size)), global_step=epoch)
     
     @torch.no_grad()
     def _run_test_once(self, epoch):
@@ -161,7 +163,7 @@ class ContrastiveTrainer(Trainer):
             self.test_loss.update(loss.item())
 
         self.writer.add_scalar(tag="Test/Loss", scalar_value=self.test_loss.value, global_step=epoch)
-        self.writer.add_image(tag="Test/Predictions1", img_tensor=make_grid(p1.view(p1.shape[0], 1, 64, 128)), global_step=epoch)
-        self.writer.add_image(tag="Test/Predictions2", img_tensor=make_grid(p1.view(p2.shape[0], 1, 64, 128)), global_step=epoch)
-        self.writer.add_image(tag="Test/GroundTruth1", img_tensor=make_grid(x1.view(x1.shape[0], 1, 64, 128)), global_step=epoch)
-        self.writer.add_image(tag="Test/GroundTruth2", img_tensor=make_grid(x2.view(x2.shape[0], 1, 64, 128)), global_step=epoch)
+        self.writer.add_image(tag="Test/Predictions1", img_tensor=make_grid(p1.view(p1.shape[0], 1, *self.image_size)), global_step=epoch)
+        self.writer.add_image(tag="Test/Predictions2", img_tensor=make_grid(p1.view(p2.shape[0], 1, *self.image_size)), global_step=epoch)
+        self.writer.add_image(tag="Test/GroundTruth1", img_tensor=make_grid(x1.view(x1.shape[0], 1, *self.image_size)), global_step=epoch)
+        self.writer.add_image(tag="Test/GroundTruth2", img_tensor=make_grid(x2.view(x2.shape[0], 1, *self.image_size)), global_step=epoch)
